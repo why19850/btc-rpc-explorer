@@ -1511,6 +1511,66 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 	}
 }));
 
+router.get("/xyzpub/:extendedPubkey/transactions", asyncHandler(async (req, res, next) => {
+	try {
+		const { perfId, perfResults } = utils.perfLogNewItem({action:"xyzpubtxs"});
+		res.locals.perfId = perfId;
+
+		var limit = config.site.addressTxPageSize;
+		var offset = 0;
+		var sort = "desc";
+
+		res.locals.maxTxOutputDisplayCount = config.site.addressPage.txOutputMaxDefaultDisplay;
+
+		if (req.query.limit) {
+			limit = parseInt(req.query.limit);
+
+			// for demo sites, limit page sizes
+			if (config.demoSite && limit > config.site.addressTxPageSize) {
+				limit = config.site.addressTxPageSize;
+
+				res.locals.userMessage = "Transaction page size limited to " + config.site.addressTxPageSize + ". If this is your site, you can change or disable this limit in the site config.";
+			}
+		}
+
+		if (req.query.offset) {
+			offset = parseInt(req.query.offset);
+		}
+
+		if (req.query.sort) {
+			sort = req.query.sort;
+		}
+
+		const extendedPubkey = req.params.extendedPubkey;
+		res.locals.extendedPubkey = extendedPubkey;
+
+		res.locals.metaTitle = `Extended Public Key: ${utils.ellipsizeMiddle(extendedPubkey, 24)}`;
+
+		res.locals.limit = limit;
+		res.locals.offset = offset;
+		res.locals.sort = sort;
+		res.locals.paginationBaseUrl = `./xyzpub/${extendedPubkey}/transactions?sort=${sort}`;
+		res.locals.transactions = [];
+		res.locals.addressApiSupport = addressApi.getCurrentAddressApiFeatureSupport();
+		
+		res.locals.result = {};
+
+
+
+
+
+	} catch (e) {
+		res.locals.pageErrors.push(utils.logError("4108h34gsd2s", e, {extendedPubkey:extendedPubkey}));
+		res.locals.userMessageMarkdown = `Failed to load extended public key: **${extendedPubkey}**`;
+
+		await utils.timePromise("extended-public-key-txs.render", async () => {
+			res.render("extended-public-key-txs");
+		});
+
+		next();
+	}
+}));
+
 router.get("/address/:address", asyncHandler(async (req, res, next) => {
 	try {
 		const { perfId, perfResults } = utils.perfLogNewItem({action:"address"});

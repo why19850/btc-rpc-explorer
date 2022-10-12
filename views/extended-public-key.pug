@@ -85,6 +85,11 @@ block content
 				pre
 					code.json #{JSON.stringify(relatedKeys, null, 4)}
 
+	if (true)
+		.row
+			.col
+				a(href=`./xyzpub/${extendedPubkey}/transactions`) View transactions
+
 	if (receiveAddresses && changeAddresses)
 		.row
 			.col
